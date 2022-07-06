@@ -1,0 +1,16 @@
+---
+
+# Drop action asserts
+# ====================
+
+- name: Test '_db_name_suffix' parameter
+  ansible.builtin.assert:
+    that:
+      - _db_name_suffix is defined
+      - _db_name_suffix is string
+    quiet: true
+  tags:
+    - assert
+    - drop
+    - replace
+    

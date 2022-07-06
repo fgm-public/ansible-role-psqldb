@@ -1,0 +1,43 @@
+---
+
+# Common asserts
+# ===============
+
+- name: Test 'db_list' parameter
+  ansible.builtin.assert:
+    that:
+      - db_list is defined
+      - db_list is iterable
+    quiet: true
+  tags:
+    - assert
+    - always
+
+
+- name: Test 'db_list' parameter contents
+  ansible.builtin.assert:
+    that:
+      - item.db_name is defined
+      - item.db_name is string
+    quiet: true
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - assert
+    - always
+
+
+- name: Test '_DB_TYPE' parameter
+  ansible.builtin.assert:
+    that:
+      - _DB_TYPE is defined
+      - _DB_TYPE is iterable
+      - _DB_TYPE['temp'] is defined
+      - _DB_TYPE['regular'] is defined      
+      - _DB_TYPE['temp'] is string
+      - _DB_TYPE['regular'] is string
+    quiet: true
+  tags:
+    - assert
+    - always

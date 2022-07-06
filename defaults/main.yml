@@ -1,0 +1,11 @@
+---
+
+# Private ancillary constants
+# ============================
+
+# Database name suffixes depending on the type of database:
+_DB_TYPE:
+  temp:     # Exists only in the recovery process
+    "_temp_restore"
+  regular:  # Persistent DB
+    ""

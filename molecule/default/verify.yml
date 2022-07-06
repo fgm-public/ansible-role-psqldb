@@ -1,0 +1,12 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Include test_service_db
+    # ansible.builtin.assert:
+    #   that: true
+    include_role:
+      name: test_service_db

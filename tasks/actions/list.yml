@@ -1,0 +1,18 @@
+---
+
+# Discovers all presented databases in cluster
+# =============================================
+
+- name: SELECT datname FROM pg_database WHERE datistemplate = false;
+  postgresql_query:
+    db: postgres
+    query: "{{ list_cluster_database_query }}"
+  register: database_list
+  tags:
+    - list
+
+- name: Presented databases is
+  debug:
+    var: database_list['query_result']
+  tags:
+    - list

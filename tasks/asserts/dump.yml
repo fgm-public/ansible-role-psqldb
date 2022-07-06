@@ -1,0 +1,31 @@
+---
+
+# Dump action asserts
+# ====================
+
+- name: Test 'dest_name' parameter
+  ansible.builtin.assert:
+    that:
+      - item.dest_name is defined
+      - item.dest_name is string
+    quiet: true
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - assert
+    - dump
+
+
+- name: Test 'dump_time_frames' parameter
+  ansible.builtin.assert:
+    that:
+      - dump_time_frames is defined
+      - dump_time_frames['duration_timeout'] is defined
+      - dump_time_frames['poll_interval'] is defined
+      - dump_time_frames['duration_timeout'] is number
+      - dump_time_frames['poll_interval'] is number
+    quiet: true
+  tags:
+    - assert
+    - dump
