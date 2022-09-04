@@ -1,0 +1,25 @@
+---
+
+# Finds custom databases and it size
+# ===================================
+
+- name: SELECT pg_size_pretty(pg_database_size('db_name'));
+  postgresql_query:
+    db: "{{ item.db_name }}"
+    query: "{{ database_size_query | format( item.db_name ) }}"
+  register: db_size
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - stat
+
+- name: db_name database size is
+  debug:
+    msg: "[ {{ item.db_name }} ] =
+          {{ db_size['results'][0]['query_result'][0]['pg_size_pretty'] }}"
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - stat

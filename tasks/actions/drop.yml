@@ -1,0 +1,62 @@
+---
+
+# Drops existing databases
+# =========================
+
+- name: Debug '_db_name_suffix' in drop.yml
+  debug:
+    msg: "{{ _db_name_suffix }}"
+  tags:
+    - never
+
+
+- name: Asserts for drop actions
+  include_tasks:
+    file: asserts/drop.yml
+  tags:
+    - assert
+    - drop
+    - replace
+
+
+- name: Prevent new connections to the database
+  postgresql_query:
+    db: "{{ item.db_name + _db_name_suffix }}"
+    query: 
+      "{{ prevent_new_connections_query | 
+            format( item.db_name + _db_name_suffix ) }}"
+  ignore_errors: true
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - drop
+    - replace
+
+
+- name: Close existing connections to the database
+  postgresql_query:
+    db: "postgres"
+    query: 
+      "{{ close_established_connections_query | 
+            format( item.db_name + _db_name_suffix ) }}"
+  ignore_errors: true            
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - drop
+    - replace
+
+
+- name: DROP DATABASE db_name;
+  postgresql_db:
+    name: "{{ item.db_name + _db_name_suffix }}"
+    state: absent
+  ignore_errors: true    
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - drop
+    - replace

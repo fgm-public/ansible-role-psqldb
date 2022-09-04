@@ -1,0 +1,76 @@
+---
+
+# Main play entrypoint for all actions
+# =====================================
+
+- name: Include SQL queries
+  include_vars:
+    file: defaults/queries.yml
+  tags:
+    - always
+
+- name: Common asserts for all actions
+  include_tasks:
+    file: asserts/common.yml
+  tags:
+    - assert
+    - always
+
+- name: Finds custom databases and their size
+  include_tasks:
+    file: actions/stat.yml
+  tags:
+    - stat
+
+- name: Discovers all presented databases in cluster
+  include_tasks:
+    file: actions/list.yml
+  tags:
+    - list
+
+- name: Drops existing databases
+  include_tasks:
+    file: actions/drop.yml
+  vars:
+    _db_name_suffix:
+      "{{ _DB_TYPE['regular'] }}"
+  when:
+    inventory_hostname is not match( "production" )
+  tags:
+    - drop
+
+- name: Dumps existing databases
+  include_tasks:
+    file: actions/dump.yml
+  tags:
+    - dump
+
+- name: Creates new databases
+  include_tasks:
+    file: actions/create.yml
+  vars:
+    _db_name_suffix:
+      "{{ _DB_TYPE['regular'] }}"
+  tags:
+    - create
+
+- name: Restores databases from dump
+  include_tasks:
+    file: actions/restore.yml
+  when: 
+    inventory_hostname is not match( "production" )
+  vars:
+    _db_name_suffix:
+      "{{ _DB_TYPE['temp'] }}"
+  tags:
+    - restore
+    - replace
+
+- name: Install database extensions
+  include_tasks:
+    file: actions/extend.yml
+  vars:
+    _db_name_suffix:
+      "{{ _DB_TYPE['regular'] }}"    
+  tags:
+    - extend

@@ -1,0 +1,43 @@
+---
+
+# Dumps existing databases
+# =========================
+
+- name: Asserts for dump actions
+  include_tasks:
+    file: asserts/dump.yml
+  tags:
+    - assert
+    - dump
+
+
+- name: Start async task pool "db_list['dest_name']" dump
+  postgresql_db:
+    name: "{{ item.db_name }}"
+    state: dump
+    target: "{{ item.dest_name }}"
+  async: "{{ dump_time_frames['duration_timeout'] }}"
+  poll: 0 # async
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  register: dump_results
+  tags:
+    - dump
+
+
+- name: Waiting for dump task pool completion
+  async_status:
+    jid: "{{ async_result_item.ansible_job_id }}"
+  loop: "{{ dump_results.results }}"
+  loop_control:
+    loop_var: "async_result_item"
+  register: dump_poll_results
+  until: dump_poll_results.finished
+  retries:
+    "{{ ( dump_time_frames['duration_timeout'] /
+          dump_time_frames['poll_interval'] ) | int }}"
+  delay:   # Poll interval
+    "{{ dump_time_frames['poll_interval'] }}"
+  tags:
+    - dump

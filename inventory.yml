@@ -1,0 +1,19 @@
+postgres:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    dev:
+      ansible_host: 172.16.10.2
+    dev2:
+      ansible_host: 172.16.10.12
+    qa:
+      ansible_host: 172.16.10.22
+    qa2:
+      ansible_host: 172.16.10.32
+    preproduction:
+      ansible_host: 172.16.10.42
+    education:
+      ansible_host: 172.16.10.52
+    production:
+      ansible_host: 172.16.10.62
+      

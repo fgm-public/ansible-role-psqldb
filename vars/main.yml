@@ -1,0 +1,137 @@
+---
+
+# User defined variables
+# =======================
+
+# List of databases with related attributes to be handled
+# Performed action type defined by tags on play startup
+db_list:
+  - db_name: test_db_1
+    db_owner: test_role_1
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    # Filesystem path to dump destination file (dump action)
+    dest_name: "/mnt/backup/dump_db_1_.sql.gz"
+    # Filesystem path to dump source file ("restore,replace" actions)
+    source_name: "/mnt/backup/dump_db_1.sql.gz"
+
+  - db_name: test_db_2
+    db_owner: test_role_2
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    dest_name: "/mnt/backup/dump_db_2_.sql.gz"
+    source_name: "/mnt/backup/dump_db_2.sql.gz"
+
+  - db_name: test_db_3
+    db_owner: test_role_2
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    dest_name: "/mnt/backup/dump_db_2_.sql.gz"
+    source_name: "/mnt/backup/dump_db_2.sql.gz"
+
+  - db_name: test_db_4
+    db_owner: test_role_2
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    dest_name: "/mnt/backup/dump_db_2_.sql.gz"
+    source_name: "/mnt/backup/dump_db_2.sql.gz"
+
+  - db_name: test_db_5
+    db_owner: test_role_2
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    dest_name: "/mnt/backup/dump_db_2_.sql.gz"
+    source_name: "/mnt/backup/dump_db_2.sql.gz"
+
+  - db_name: test_db_6
+    db_owner: test_role_2
+    template: template1
+    description: "Database created at {{ ansible_date_time.date }} by {{ db_creator }}"
+    db_roles:
+      - test_role_1
+      - test_role_2
+      - test_role_3
+      - test_role_4
+    collate: 'ru_RU.UTF-8'
+    ctype: 'ru_RU.UTF-8'
+    tablespace: pg_default
+    db_extensions:
+      - uuid-ossp
+      - dblink
+    dest_name: "/mnt/backup/dump_db_2_.sql.gz"
+    source_name: "/mnt/backup/dump_db_2.sql.gz"
+
+
+predefined_cluster_roles:
+  - readonly
+  - analytics
+  - bi
+  - test_role_1
+  - test_role_2
+  - test_role_3
+  - test_role_4
+
+
+# Time frames for backup (dump,restoration) processes
+dump_time_frames:
+  # Absolute time limit for (dump,restoration) processes in seconds
+  # If elapsed, then task will fail with message:
+  #   "msg": "async task did not complete within the requested time - 86400s"
+  duration_timeout: 86400  # Day
+  # Time interval for polling results of executed dump,restoration processes
+  poll_interval: 3600 # Hour

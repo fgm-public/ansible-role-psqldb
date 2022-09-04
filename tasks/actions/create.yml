@@ -1,0 +1,106 @@
+---
+
+# Creates new databases
+# ======================
+
+- name: Debug '_db_name_suffix' in create.yml
+  debug:
+    msg: "{{ _db_name_suffix }}"
+  tags:
+    - never
+
+
+- name: Asserts for create actions
+  include_tasks:
+    file: asserts/create.yml
+  tags:
+    - assert
+    - create
+    - restore
+    - replace
+
+
+- name: CREATE ROLE db_role;
+  postgresql_user:
+    name: "{{ item }}"
+    # role_attr_flags: NOLOGIN
+    state: present
+  loop:
+    "{{ predefined_cluster_roles }}"
+  tags:
+    - create
+    - restore
+    - replace
+
+
+- name: CREATE DATABASE db_name WITH OWNER db_owner;
+  postgresql_db:
+    name:  "{{ item.db_name + _db_name_suffix }}"
+    owner: "{{ item.db_owner }}"
+    template: "{{ item.template }}"
+    lc_ctype: "{{ item.ctype }}"
+    lc_collate: "{{ item.collate }}"
+    tablespace: "{{ item.tablespace | default('pg_default') }}"
+    state: present
+  loop:
+    "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - create
+    - restore
+    - replace
+
+
+- name: COMMENT ON DATABASE db_name IS comment;
+  postgresql_query:
+    query:
+      "{{ descript_database_query |
+            format( item.db_name, item.description ) }}"
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - create
+    - restore
+    - replace
+
+
+- name: GRANT ALL PRIVILEGES ON DATABASE db_name TO db_roles;
+  postgresql_privs:
+    db: "{{ item.db_name + _db_name_suffix }}"
+    privs: ALL
+    type: database
+    role: "{{ item.db_roles | join(',') }}"
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - create
+    - restore
+    - replace
+
+
+- name: GRANT ALL ON SCHEMA public TO db_roles;
+  postgresql_privs:
+    db: "{{ item.db_name + _db_name_suffix }}"
+    privs: ALL
+    type: schema
+    objs: public
+    role: "{{ item.db_roles | join(',') }}"
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - create
+    - restore
+    - replace
+
+
+- name: Include extend tasks
+  ansible.builtin.include_tasks:
+    actions/extend.yml
+  tags:
+    - create
+    - restore
+    - replace

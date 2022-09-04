@@ -1,0 +1,91 @@
+---
+
+# Restores databases from dump
+# =============================
+
+- name: Asserts for restore actions
+  include_tasks:
+    file: asserts/restore.yml
+  tags:
+    - assert
+    - restore    
+    - replace
+
+
+- name: Include "drop" tasks for temporary database
+  ansible.builtin.include_tasks:
+    actions/drop.yml
+  vars:
+    _db_name_suffix: "{{ _DB_TYPE['temp'] }}"
+  tags:
+    - restore
+    - replace
+
+
+- name: Include "create" tasks for temporary database
+  ansible.builtin.include_tasks:
+    actions/create.yml
+  vars:
+    _db_name_suffix: "{{ _DB_TYPE['temp'] }}"
+  tags:
+    - restore
+    - replace
+
+
+- name: Start async task pool "db_list['source_name']" restore to temporary database
+  postgresql_db:
+    name: "{{ item.db_name + _db_name_suffix }}"
+    state: restore
+    target: "{{ item.source_name }}"
+  async: "{{ dump_time_frames['duration_timeout'] }}"
+  poll: 0 # Async
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  register: restoration_results
+  tags:
+    - restore
+    - replace
+
+
+- name: Waiting for restoration task pool completion
+  async_status:
+    jid: "{{ async_result_item.ansible_job_id }}"
+  loop: "{{ restoration_results.results }}"
+  loop_control:
+    loop_var: "async_result_item"
+  register: restoration_poll_results
+  until: restoration_poll_results.finished
+  retries:
+    "{{ ( dump_time_frames['duration_timeout'] /
+          dump_time_frames['poll_interval'] ) | int }}"
+  # Poll interval
+  delay:
+    "{{ dump_time_frames['poll_interval'] }}"
+  tags:
+    - restore
+    - replace
+
+
+- name: Include drop tasks for regular database
+  ansible.builtin.include_tasks:
+    actions/drop.yml
+  vars:
+    _db_name_suffix: "{{ _DB_TYPE['regular'] }}"
+  tags:
+    - replace
+
+
+- name: ALTER DATABASE db_name_temp_restore RENAME TO db_name;
+  postgresql_query:
+    query: 
+      "{{ rename_database_query | 
+            format( item.db_name + _db_name_suffix, item.db_name ) }}"
+  vars:
+    _db_name_suffix: "{{ _DB_TYPE['temp'] }}"
+  loop: "{{ db_list }}"
+  loop_control:
+    label: "{{ item.db_name }}"
+  tags:
+    - restore
+    - replace
