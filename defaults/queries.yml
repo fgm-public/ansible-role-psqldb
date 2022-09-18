@@ -30,3 +30,7 @@ list_cluster_database_query:
 
 descript_database_query:
   "COMMENT ON DATABASE %s IS '%s';"
+
+analyze_database_query:
+  "ANALYZE;"
+  

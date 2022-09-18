@@ -10,6 +10,13 @@
     - never
 
 
+- name: Debug database template in create.yml
+  debug:
+    msg: "{{ 'db_list.template' if _db_name_suffix == '' else 'template0'}}"
+  tags:
+    - never
+
+
 - name: Asserts for create actions
   include_tasks:
     file: asserts/create.yml
@@ -37,7 +44,9 @@
   postgresql_db:
     name:  "{{ item.db_name + _db_name_suffix }}"
     owner: "{{ item.db_owner }}"
-    template: "{{ item.template }}"
+    # Clone from 'template1' if clear database without further provisioning
+    # Clone from 'template0' for further restoration from dump
+    template: "{{ item.template if _db_name_suffix == '' else 'template0' }}"
     lc_ctype: "{{ item.ctype }}"
     lc_collate: "{{ item.collate }}"
     tablespace: "{{ item.tablespace | default('pg_default') }}"
@@ -54,6 +63,7 @@
 
 - name: COMMENT ON DATABASE db_name IS comment;
   postgresql_query:
+    db: "{{ item.db_name + _db_name_suffix }}"  
     query:
       "{{ descript_database_query |
             format( item.db_name, item.description ) }}"
